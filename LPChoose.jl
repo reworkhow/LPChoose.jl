@@ -40,7 +40,7 @@ function LPChoose(hapblock,budget=100,MAF=0.0;nsteps=1) #budget is #of selected 
             #which haplotypes are identified by selected animals
             haps_identified = (vec(sum(A01_temp[:,sol .== 1.0],dims=2)) .!= 0)
             A01_temp        = A01_temp[haps_identified,sol]
-            freq            = vec(mean(A01_temp,dims=2)/2)
+            freq            = freq[sol .== 1.0]#vec(mean(A01_temp,dims=2)/2)
             importance      = Matrix(freq'A01_temp))
             println("Number of animals selected at step", stepi, " is: ",sum(sol))
         end
