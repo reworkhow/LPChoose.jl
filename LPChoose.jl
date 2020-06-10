@@ -1,50 +1,81 @@
 #using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics
-#include("LPseq.jl")
+#include("LPChoose.jl")
 #input="smalldata.txt"
-#sol,hap =LPChoose(input,100,0.00,nsteps=5);
+#sol,hap =LPChoose(input,100,0.00);
 
 #same results as fixed_budget_LP with MAF=0 if hap frequency is calculated correctly in fixed_budget_LP
-function LPChoose(hapblock,budget=100,MAF=0.0;nsteps=1) #budget is #of selected animals
+"""
+    LPChoose(hapblock,budget=100,MAF=0.0;nsteps=Int(budget/2))
+
+* Choose animals for sequencing given haplotype information **hapblock** filterd by
+minor haplotype frequency **MAF** for two applications:
+    * identify minimum number of animals containing all unique haplotypes in the population if `budget = "unlimited"`;
+    * identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes
+      present in the population given a limited **budget**, defaulting to `100` (100 animals).
+* A fast approximation may be used to speed up computation in practice to select a fixed number of animals. This approximation
+  is performed by selecting **budget** animals in **nsteps**. Fro example, we can select 2 animals in each step to select 100
+  animals with 100/2=50 steps.
+* If a text file is provided for **hapblock**, the file format should be:
+    * ```
+    #ind1 hap1_1 hap1_1 hap2_1 hap2_4
+    #ind2 hap1_2 hap1_1 hap2_1 hap2_2
+    #ind3 hap1_1 hap1_3 hap2_2 hap2_3
+    1,1,1,1,4
+    2,2,1,1,2
+    3,1,3,2,3
+    ```
+    where individual IDs are in 1st column, maternal and paternal haplotypes for haplotype block 1 are in column 2-3,
+    maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+
+"""
+function LPChoose(hapblock,budget=100,MAF=0.0;nsteps=div(budget,2)+1) #budget is #of selected animals
     #Get incidence matrix
-    A01,A012,freq  = convert_input_to_A(hapblock,MAF)
+    A01,freq = convert_input_to_A(hapblock,MAF)
     animals  = collect(1:size(A01,2))
     nind     = length(animals)
-    if budget == "unlimited"
-        c=ones(Int64,N)
+    if budget == "unlimited" #method 1
+        importance = ones(nind)
         model = Model(GLPK.Optimizer)
         @variable(model, select_this_animal[1:nind],Bin)
-        @objective(model, Min, sum([select_this_animal[i] for i= 1:nind]))
-        @constraint(model,con,A01 * select_this_animal .>= 1)
+        @objective(model, Min, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
+        @constraint(model,???con, A01 * select_this_animal .>= 1)
         @time optimize!(model)
-        termination_status(model)#check if an optimal solution is found
+        termination_status(model)#check if an optimal solution is found #return solutions if no errros/solution exists
         primal_status(model)
-        println("The minimum nunber of selected animals is ", objective_value(model))
+        println("The minimum number of selected animals is ", objective_value(model))
+        sol     = JuMP.value.(select_this_animal)
+        #CSV.write("out.txt",animals[sol])
     else
-        A01_temp   =copy(A01)
+        A01_temp = copy(A01)
         #get importance of each individual
         budget_each_step = Int(budget/nsteps)
         importance = Matrix(freq'A01_temp)) #importance = vec(Matrix(freq'A01))
-        for stepi = 1:nsteps
+        @progress ... for stepi = 1:nsteps
+            nind  = length(animals)
             model = Model(GLPK.Optimizer)
             @variable(model, select_this_animal[1:nind],Bin)
             @objective(model, Max, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
-            @constraint(model,A01 * select_this_animal .<= 2)
-            @constraint(model,sum(select_this_animal) <= budget_each_step) #e.g.,selecte 2 animals at each step
+            @constraint(model, A01 * select_this_animal .<= 2)
+            @constraint(model, sum(select_this_animal) <= budget_each_step) #e.g.,selecte 2 animals at each step
             @time optimize!(model)
             termination_status(model)     #check if the solver found an optimal solution
             primal_status(model)          #the primal only inform that the primal solutions are feasible
             objective_value(model)        #final objective solution
-
+                                        #???ERROR MESSGAE
             # solution
             sol     = JuMP.value.(select_this_animal)
             #which haplotypes are identified by selected animals
             haps_identified = (vec(sum(A01_temp[:,sol .== 1.0],dims=2)) .!= 0)
-            A01_temp        = A01_temp[haps_identified,sol]
+            A01_temp        = A01_temp[haps_identified,sol] # MODIFY
             freq            = freq[sol .== 1.0]#vec(mean(A01_temp,dims=2)/2)
             importance      = Matrix(freq'A01_temp))
             println("Number of animals selected at step", stepi, " is: ",sum(sol))
+
+            animals  = animals[!select_this_animal]
         end
+        diff(original animal and curent animal)
         #need a line for which animal is selected
+        println(size(A01_temp,1)/size(A01,1), " of the unique haplotypes for the population is covered.")
         println(sum(A01_temp)/sum(A01), " of the genome for the population is covered.")
     end
 end
@@ -57,11 +88,11 @@ end
 #column 2-3: Maternal and Paternal Haplotypes block 1
 #column 4-5: Maternal and Paternal Haplotypes block 2
 #
-#ind1 hap1_1 hap1_1 hap2_1 hap2_1
+#ind1 hap1_1 hap1_1 hap2_1 hap2_4
 #ind2 hap1_2 hap1_1 hap2_1 hap2_2
 #ind3 hap1_1 hap1_3 hap2_2 hap2_3
 #i.e.,
-#1,1,1,1*,1*
+#1,1,1,1*,4*
 #2,2,1,1*,2*
 #3,1,3,2*,3*
 #
@@ -69,13 +100,13 @@ end
 #
 #convert input file to "incidence matrix" of zeros/ones where each row represents
 # one haplotype in the haplotype block,e.g, A'=
-#ID,  hap1_1,hap1_2,hap1_3,hap2_1,hap2_2,hap2_3
-#ind1,1,0,0,1,0,0
-#ind2,1,1,0,1,1,0
-#ind3,1,0,1,0,1,1
+#ID,  hap1_1,hap1_2,hap1_3,hap2_1,hap2_2,hap2_3,hap2_4
+#ind1,1,0,0,1,0,0,1
+#ind2,1,1,0,1,1,0,0
+#ind3,1,0,1,0,1,1,0
 #
 #Test:
-#input=[1 1 1 1 1
+#input=[1 1 1 1 4
 #       2 2 1 1 2
 #       3 1 3 2 3]
 #A = convert_input_to_A(input)
@@ -130,14 +161,13 @@ function convert_input_to_A(hapblock,MAF=0.0)
     rowindex=[rowindex[1];rowindex[2]]
     colindex=[colindex[1];colindex[2]]
     value=[value[1];value[2]]
-    XMat=sparse(rowindex,colindex,value)
-
-    #remove haplotypes with low frequency
-    freq = vec(mean(XMat,dims=2)/2)
-    freq = freq[freq .> MAF]
-    A012 = XMat[freq .> MAF,:]
+    A012=sparse(rowindex,colindex,value)
     #To make sparse matrix only has value "1",one unique haplotypes in one animal in one block
     #was calculated twice.
     A01 = replace!(A012, 2=>1)
-    return A01,A012,freq
+    #remove haplotypes with low frequency
+    freq = vec(mean(A01,dims=2))
+    freq = freq[freq .> MAF]
+    A01  = A01[freq .> MAF,:]
+    return A01,freq
 end
