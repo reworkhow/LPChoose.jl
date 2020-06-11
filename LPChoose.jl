@@ -3,13 +3,12 @@ using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statist
 """
     LPChoose(hapblock,budget=100,MAF=0.0;nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))
 
-* Choose animals for sequencing given haplotype information **hapblock** filterd by
-minor haplotype frequency **MAF** for two applications:
+* Choose animals for sequencing given haplotype information **hapblock** filterd by minor haplotype frequency **MAF** for two applications:
     * identify minimum number of animals containing all unique haplotypes in the population if `budget = "unlimited"`;
     * identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes
       present in the population given a limited **budget**, defaulting to `100` (100 animals).
 * A fast approximation may be used to speed up computation in practice to select a fixed number of animals. This approximation
-  is performed by selecting **budget** animals in **nsteps**, defaulting to selecting 2 animals at each step. Fro example,
+  is performed by selecting **budget** animals in **nsteps**, defaulting to selecting 2 animals at each step. For example,
   we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
 * If a text file is provided for **hapblock**, the file format should be:
     * ```
