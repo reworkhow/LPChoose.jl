@@ -1,11 +1,7 @@
-#using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics
-#include("LPChoose.jl")
-#input="smalldata.txt"
-#sol,hap =LPChoose(input,100,0.00);
-
-#same results as fixed_budget_LP with MAF=0 if hap frequency is calculated correctly in fixed_budget_LP
+#include("LPChoose.jl"); LPChoose("smalldata.txt",100,0.00);
+using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics, StatsBase
 """
-    LPChoose(hapblock,budget=100,MAF=0.0;nsteps=Int(budget/2))
+    LPChoose(hapblock,budget=100,MAF=0.0;nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))
 
 * Choose animals for sequencing given haplotype information **hapblock** filterd by
 minor haplotype frequency **MAF** for two applications:
@@ -25,8 +21,8 @@ minor haplotype frequency **MAF** for two applications:
     maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
 
 """
-function LPChoose(hapblock,budget=100,MAF=0.0;
-                  nsteps= (budget=="unlimited" ? 1 : div(budget,2)+1)) #budget is #of selected animals
+function LPChoose(hapblock,budget="unlimited",MAF=0.0;
+                  nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))) #budget is #of selected animals
     #Get incidence matrix
     A01,freq = convert_input_to_A(hapblock,MAF)
     animals  = collect(1:size(A01,2))
@@ -45,7 +41,7 @@ function LPChoose(hapblock,budget=100,MAF=0.0;
         @time optimize!(model)
         if JuMP.has_values(model)
             print("\nThe minimum number of selected animals is: ")
-            printstyled(Int(objective_value(model)),"\n",bold=true,color=:red)
+            printstyled(Int(objective_value(model)),"\n\n",bold=true,color=:red)
             select_this_animal = (JuMP.value.(select_this_animal) .== 1.0)
             writedlm("identified_animals.txt",animals[select_this_animal])
             println("IDs for identified animals were save in identified_animals.txt.\n")
@@ -53,38 +49,38 @@ function LPChoose(hapblock,budget=100,MAF=0.0;
             error("No Solutions")
         end
     else #application 2
-        nsteps=div(budget,2)+1
-        A01_temp = copy(A01)
-        #get importance of each individual
+        println("---------------2ND APPLICATION--------------------")
+        println("------------identify best $budget animals--------------")
+        println("--representing maximum proportions of haplotypes--")
+        println("-----------RUN LINEAR PROGRAMMING-----------------\n")
+        animals_now      = copy(animals)
+        A01now           = copy(A01)
         budget_each_step = Int(budget/nsteps)
-        importance = Matrix(freq'A01_temp) #importance = vec(Matrix(freq'A01))
+        importance       = Matrix(freq'A01now)#get importance of each individual
         for stepi = 1:nsteps
-            nind  = length(animals)
+            nind  = length(animals_now)
             model = Model(GLPK.Optimizer)
             @variable(model, select_this_animal[1:nind],Bin)
             @objective(model, Max, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
-            @constraint(model, A01 * select_this_animal .<= 2)
+            @constraint(model, A01now * select_this_animal .<= 2)
             @constraint(model, sum(select_this_animal) <= budget_each_step) #e.g.,selecte 2 animals at each step
+            print("Step $stepi took")
             @time optimize!(model)
-            println(termination_status(model))     #check if the solver found an optimal solution
-            println(primal_status(model))          #the primal only inform that the primal solutions are feasible
-            println(objective_value(model))        #final objective solution
-                                        #???ERROR MESSGAE
-            # solution
-            sol     = JuMP.value.(select_this_animal)
-            #which haplotypes are identified by selected animals
-            haps_identified = (vec(sum(A01_temp[:,sol .== 1.0],dims=2)) .!= 0)
-            A01_temp        = A01_temp[haps_identified,sol] # MODIFY
-            freq            = freq[sol .== 1.0]#vec(mean(A01_temp,dims=2)/2)
-            importance      = Matrix(freq'A01_temp)
-            println("Number of animals selected at step", stepi, " is: ",sum(sol))
-
-            animals  = animals[!select_this_animal]
+            if JuMP.has_values(model) == false
+                error("No Solutions")
+            end
+            select_this_animal = (JuMP.value.(select_this_animal) .== 1.0) #boolean
+            haps_identified    = (vec(sum(A01now[:,select_this_animal],dims=2)) .!= 0) #boolean
+            A01now             = A01now[.!haps_identified,.!select_this_animal]
+            freq               = freq[.!haps_identified]
+            importance         = Matrix(freq'A01now)
+            animals_now        = animals_now[.!select_this_animal]
+            #println("number of animals selected at step", stepi, " is: ",sum(select_this_animal))
         end
-        #diff(original animal and curent animal)
-        #need a line for which animal is selected
-        println(size(A01_temp,1)/size(A01,1), " of the unique haplotypes for the population is covered.")
-        println(sum(A01_temp)/sum(A01), " of the genome for the population is covered.")
+        println("\n",size(A01now,1)/size(A01,1), " of the unique haplotypes in the population is covered.")
+        println(sum(A01now)/sum(A01), " of the genome in the population is covered.\n")
+        writedlm("identified_animals.txt",setdiff(animals,animals_now))
+        println("IDs for identified animals were save in identified_animals.txt.\n")
     end
     println("---------------------DONE-------------------------")
 end
