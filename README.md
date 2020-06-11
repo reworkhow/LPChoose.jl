@@ -1,7 +1,7 @@
 # LPChoose.jl
 Optimizing Sequencing Resources in Genotyped Livestock Populations by Linear Programming
 
-### LPChoos function
+### LPChoose function
 
     LPChoose(hapblock,budget=100,MAF=0.0;nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))
 
