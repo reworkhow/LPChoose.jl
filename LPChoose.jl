@@ -43,7 +43,7 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
             printstyled(Int(objective_value(model)),"\n\n",bold=true,color=:red)
             select_this_animal = (JuMP.value.(select_this_animal) .== 1.0)
             writedlm("identified_animals.txt",animals[select_this_animal])
-            println("IDs for identified animals were save in identified_animals.txt.\n")
+            println("IDs for identified animals were saved in identified_animals.txt.\n")
         else
             error("No Solutions")
         end
@@ -79,7 +79,7 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         println("\n",size(A01now,1)/size(A01,1), " of the unique haplotypes in the population is covered.")
         println(sum(A01now)/sum(A01), " of the genome in the population is covered.\n")
         writedlm("identified_animals.txt",setdiff(animals,animals_now))
-        println("IDs for identified animals were save in identified_animals.txt.\n")
+        println("IDs for identified animals were saved in identified_animals.txt.\n")
     end
     println("---------------------DONE-------------------------")
 end
