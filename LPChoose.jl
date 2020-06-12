@@ -176,8 +176,8 @@ function convert_input_to_A(hapblock,MAF=0.0)
     println("Haplotype Frequency ",summarystats(freq))
 
     #remove haplotypes with low frequency
-    freq = freq[freq .> MAF]
     A01  = A01[freq .> MAF,:]
+    freq = freq[freq .> MAF]
     println("--------------QUALITY CONTROL-------------------")
     println("----------minor haplotype frequency: ",MAF,"--------")
     println("#Animal:",size(A01,2))
