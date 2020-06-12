@@ -76,8 +76,8 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
             animals_now        = animals_now[.!select_this_animal]
             #println("number of animals selected at step", stepi, " is: ",sum(select_this_animal))
         end
-        println("\n",size(A01now,1)/size(A01,1), " of the unique haplotypes in the population is covered.")
-        println(sum(A01now)/sum(A01), " of the genome in the population is covered.\n")
+        println("\n",1 - size(A01now,1)/size(A01,1), " of the unique haplotypes in the population is covered.")
+        println(1 - sum(A01now)/sum(A01), " of the genome in the population is covered.\n")
         writedlm("identified_animals.txt",setdiff(animals,animals_now))
         println("IDs for identified animals were saved in identified_animals.txt.\n")
     end
