@@ -1,6 +1,10 @@
 # LPChoose.jl
 Optimizing Sequencing Resources in Genotyped Livestock Populations by Linear Programming
 
+> Hao Cheng, Keyu Xu, Kuruvilla Joseph Abraham, Optimizing Sequencing Resources in Genotyped Livestock Populations Using Linear Programming
+bioRxiv 2020.06.29.179093; doi: https://doi.org/10.1101/2020.06.29.179093
+
+
 ### LPChoose function
 
     LPChoose(hapblock,budget=100,MAF=0.0;nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))
