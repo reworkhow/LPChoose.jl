@@ -120,3 +120,60 @@ IDs for identified animals were saved in identified_animals.txt.
 ---------------------DONE-------------------------
 
 ```
+
+# allow preselected animals
+
+```julia
+julia> animals_selected=[1,10,12,13,20,25]
+julia> LPChoose("smalldata.txt",10,preselected_animals=animals_selected);
+
+--------------INPUT----------------------------
+#Animal:6000
+#Unique Haplotypes:27473
+Haplotype Frequency Summary Stats:
+Length:         27473
+Missing Count:  0
+Mean:           0.007139
+Minimum:        0.000167
+1st Quartile:   0.000167
+Median:         0.000500
+3rd Quartile:   0.002000
+Maximum:        0.353000
+
+--------------QUALITY CONTROL-------------------
+----------minor haplotype frequency: 0.0--------
+#Animal:6000
+#Unique Haplotypes:27473
+Haplotype Frequency Summary Stats:
+Length:         27473
+Missing Count:  0
+Mean:           0.007139
+Minimum:        0.000167
+1st Quartile:   0.000167
+Median:         0.000500
+3rd Quartile:   0.002000
+Maximum:        0.353000
+
+---------------2ND APPLICATION--------------------
+------------identify best 10 animals--------------
+--representing maximum proportions of haplotypes--
+-----------RUN LINEAR PROGRAMMING-----------------
+
+Step 1 took  0.374401 seconds (908.63 k allocations: 101.468 MiB, 5.89% gc time)
+Step 2 took  0.283823 seconds (899.96 k allocations: 94.103 MiB)
+Step 3 took  0.289010 seconds (891.79 k allocations: 87.604 MiB, 9.55% gc time)
+Step 4 took  0.276065 seconds (885.11 k allocations: 83.597 MiB, 12.94% gc time)
+Step 5 took  0.274014 seconds (876.84 k allocations: 79.381 MiB, 19.45% gc time)
+
+0.07884104393404434 of the unique haplotypes in the population is covered.
+0.619383149107422 of the genome in the population is covered.
+
+
+0.0440448759113059 of the unique haplotypes in the population (exclude preselected animals) is covered.
+0.47576847092310137 of the genome in the population (exclude preselected animals) is covered.
+
+IDs for identified animals were saved in identified_animals.txt.
+
+---------------------DONE-------------------------
+
+```
