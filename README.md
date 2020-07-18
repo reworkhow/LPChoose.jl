@@ -112,8 +112,8 @@ Step 3 took  0.348062 seconds (921.41 k allocations: 102.636 MiB)
 Step 4 took  0.283420 seconds (910.40 k allocations: 95.106 MiB)
 Step 5 took  0.289956 seconds (901.46 k allocations: 89.485 MiB, 11.84% gc time)
 
-0.9497688639755396 of the unique haplotypes in the population is covered.
-0.49937543337276175 of the genome in the population is covered.
+0.05023113602446039 of the unique haplotypes in the population is covered.
+0.5006245666272382 of the genome in the population is covered.
 
 IDs for identified animals were saved in identified_animals.txt.
 
