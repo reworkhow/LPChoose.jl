@@ -16,15 +16,17 @@ using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statist
       2,2,1,1,2       #ind2, hap1_2, hap1_1, hap2_1, hap2_2
       3,1,3,2,3       #ind3, hap1_1, hap1_3, hap2_2 hap2_3
       ```
-    where individual IDs are in 1st column, maternal and paternal haplotypes for haplotype block 1 are in column 2-3,
-    maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+    where individual IDs (they are required to be intergeres) are in 1st column, maternal and paternal haplotypes
+    for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
 
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
-                  nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))) #budget is #of selected animals
+                  nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),
+                  preselected_animals = false) #budget is #of selected animals
     #Get incidence matrix
-    A01,freq = convert_input_to_A(hapblock,MAF)
-    animals  = collect(1:size(A01,2))
+    A01_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF)
+    A01,freq, animals = select_these_animals(A01_all,freq_all,animals_all,preselected_animals)
+    #animals  = collect(1:size(A01,2))
     nind     = length(animals)
     if budget == "unlimited" #application 1
         println("---------------1ST APPLICATION--------------------")
@@ -52,8 +54,8 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         println("------------identify best $budget animals--------------")
         println("--representing maximum proportions of haplotypes--")
         println("-----------RUN LINEAR PROGRAMMING-----------------\n")
-        animals_now      = copy(animals)
-        A01now           = copy(A01)
+        animals_now = copy(animals)
+        A01now      = copy(A01)
         budget_each_step = Int(budget/nsteps)
         importance       = Matrix(freq'A01now)#get importance of each individual
         for stepi = 1:nsteps
@@ -76,8 +78,12 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
             animals_now        = animals_now[.!select_this_animal]
             #println("number of animals selected at step", stepi, " is: ",sum(select_this_animal))
         end
-        println("\n",1 - size(A01now,1)/size(A01,1), " of the unique haplotypes in the population is covered.")
-        println(1 - sum(A01now)/sum(A01), " of the genome in the population is covered.\n")
+        println("\n",1 - size(A01now,1)/size(A01_all,1), " of the unique haplotypes in the population is covered.")
+        println(1 - sum(A01now)/sum(A01_all), " of the genome in the population is covered.\n")
+        if preselected_animals != false
+            println("\n",1 - size(A01now,1)/size(A01,1), " of the unique haplotypes in the population (exclude preselected animals) is covered.")
+            println(1 - sum(A01now)/sum(A01), " of the genome in the population (exclude preselected animals) is covered.\n")
+        end
         writedlm("identified_animals.txt",setdiff(animals,animals_now))
         println("IDs for identified animals were saved in identified_animals.txt.\n")
     end
@@ -122,8 +128,9 @@ function convert_input_to_A(hapblock,MAF=0.0)
     else
         df = Int.(hapblock)
     end
-    nind   = size(df,1)
-    nblock = Int((size(df,2)-1)/2)
+    animalIDs = df[:,1]
+    nind      = size(df,1)
+    nblock    = Int((size(df,2)-1)/2)
 
     num_haps = zeros(Int64,nblock)
     breaks   = zeros(Int64,nblock)
@@ -183,5 +190,63 @@ function convert_input_to_A(hapblock,MAF=0.0)
     println("#Animal:",size(A01,2))
     println("#Unique Haplotypes:",size(A01,1))
     println("Haplotype Frequency ",summarystats(freq))
-    return A01,freq
+    return A01,freq,animalIDs
+end
+
+
+"""
+    check_genome_coverage(hapblock,preselected_animals,MAF=0.0)
+
+* Check haplotype and genome coverage for a given set of animails in a population
+  defined by given haplotype information **hapblock** filterd by minor haplotype frequency **MAF**.
+* If a text file is provided for **hapblock**, the file format should be:
+    * ```
+      1,1,1,1,4       #ind1, hap1_1, hap1_1, hap2_1, hap2_4
+      2,2,1,1,2       #ind2, hap1_2, hap1_1, hap2_1, hap2_2
+      3,1,3,2,3       #ind3, hap1_1, hap1_3, hap2_2 hap2_3
+      ```
+    where individual IDs (they are required to be intergeres) are in 1st column, maternal and paternal haplotypes
+    for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+* If a text file is provided for **preselected_animals**, the file format should be
+    * ```
+    1
+    3
+    10
+    ```
+    where individual IDs (they are required to be intergeres) are in 1st column.
+"""
+function check_genome_coverage(hapblock,preselected_animals,MAF=0.0)
+
+    A01,freq, animals = convert_input_to_A(hapblock,MAF)
+
+    println("\n\n\n\n\n")
+    println("--------------CHECK GENOME COVERAGE---------------")
+    println("-------------by preselected animals---------------")
+
+    A01_remaining, freq_remaining, animals_remaining = select_these_animals(A01,freq, animals,preselected_animals)
+    println("\n",1 - size(A01_remaining,1)/size(A01,1), " of the unique haplotypes in the population is covered.")
+    println(1 - sum(A01_remaining)/sum(A01), " of the genome in the population is covered.\n")
+
+    println("------------Remaining Animals-----------------------")
+    println("#Animal:",length(animals))
+    println("Haplotype Frequency (remaining animals) ",summarystats(freq_remaining))
+end
+
+function select_these_animals(A01,freq,animals,preselected_animals)
+    if preselected_animals == false
+        return A01,freq,animals
+    elseif typeof(preselected_animals) == String
+        preselected_animals = readdlm(preselected_animals,Int64)
+    else
+        preselected_animals = Int.(preselected_animals)
+    end
+    if !issubset(preselected_animals,animals)
+        error("Selected animals IDs are not found!")
+    end
+    select_this_animal = [i in preselected_animals for i in animals] #boolean
+    haps_identified    = (vec(sum(A01[:,select_this_animal],dims=2)) .!= 0) #boolean
+    A01_remaining      = A01[.!haps_identified,.!select_this_animal]
+    animals_remaining  = animals[.!select_this_animal]
+    freq_remaining     = freq[.!haps_identified]
+    return A01_remaining, freq_remaining, animals_remaining
 end
