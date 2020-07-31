@@ -1,5 +1,6 @@
 #include("LPChoose.jl"); LPChoose("smalldata.txt",100,0.00);
 using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics, StatsBase
+using ProgressMeter
 """
     LPChoose(hapblock,budget=100,MAF=0.0;nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))
 
@@ -54,37 +55,65 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         println("------------identify best $budget animals--------------")
         println("--representing maximum proportions of haplotypes--")
         println("-----------RUN LINEAR PROGRAMMING-----------------\n")
-        animals_now = copy(animals)
-        A01now      = copy(A01)
+        if budget > length(animals)
+            error("try to identify best $budget animals from a population of $(length(animals)) animals.")
+        end
+        animals_now      = copy(animals)
+        A01now           = copy(A01)
         budget_each_step = Int(budget/nsteps)
         importance       = Matrix(freq'A01now)#get importance of each individual
-        for stepi = 1:nsteps
+
+        #Create text files to save output at each step
+        file_genome_coverage    =open("genome_coverage.txt","w")
+        file_hap_coverage       =open("haplotype_coverage.txt","w")
+        file_identified_animals =open("identified_animals.txt","w")
+        writedlm(file_genome_coverage,["step" "genome_covereage"],',')
+        writedlm(file_hap_coverage,["step" "haplotype_coverage"],',')
+        writedlm(file_identified_animals, ["step" "ID"],',')
+        writedlm(file_genome_coverage,["0" 1-sum(A01now)/sum(A01_all)],      ',')
+        writedlm(file_hap_coverage,   ["0" 1-size(A01now,1)/size(A01_all,1)],',')
+        if preselected_animals != false
+            writedlm(file_identified_animals,[fill("0",length(preselected_animals)) preselected_animals],',')
+        else
+            writedlm(file_identified_animals,["0" "NA"],',')
+        end
+
+        @showprogress "identifying most representative animals ..." for stepi = 1:nsteps
             nind  = length(animals_now)
             model = Model(GLPK.Optimizer)
             @variable(model, select_this_animal[1:nind],Bin)
             @objective(model, Max, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
             @constraint(model, A01now * select_this_animal .<= 2)
             @constraint(model, sum(select_this_animal) <= budget_each_step) #e.g.,selecte 2 animals at each step
-            print("Step $stepi took")
-            @time optimize!(model)
+            #print("Step $stepi took") @time optimize!(model)
+            optimize!(model)
             if JuMP.has_values(model) == false
                 error("No Solutions")
             end
+            #get identified animals at this step
             select_this_animal = (JuMP.value.(select_this_animal) .== 1.0) #boolean
+            writedlm(file_identified_animals,[fill(string(stepi),sum(select_this_animal)) animals_now[select_this_animal]],',')
+            #get identified haplotypes at this step
             haps_identified    = (vec(sum(A01now[:,select_this_animal],dims=2)) .!= 0) #boolean
+            #update to current remaining animals for next round of selection
             A01now             = A01now[.!haps_identified,.!select_this_animal]
             freq               = freq[.!haps_identified]
             importance         = Matrix(freq'A01now)
             animals_now        = animals_now[.!select_this_animal]
-            #println("number of animals selected at step", stepi, " is: ",sum(select_this_animal))
+            #save output to text files at this step
+            writedlm(file_genome_coverage,[string(stepi) 1-sum(A01now)/sum(A01_all)],',')
+            writedlm(file_hap_coverage,[string(stepi) 1-size(A01now,1)/size(A01_all,1)],',')
         end
+        close(file_genome_coverage)
+        close(file_hap_coverage)
+        close(file_identified_animals)
         println("\n",1 - size(A01now,1)/size(A01_all,1), " of the unique haplotypes in the population is covered.")
         println(1 - sum(A01now)/sum(A01_all), " of the genome in the population is covered.\n")
         if preselected_animals != false
             println("\n",1 - size(A01now,1)/size(A01,1), " of the unique haplotypes in the population (exclude preselected animals) is covered.")
             println(1 - sum(A01now)/sum(A01), " of the genome in the population (exclude preselected animals) is covered.\n")
         end
-        writedlm("identified_animals.txt",setdiff(animals,animals_now))
+        #writedlm("identified_animals.txt",setdiff(animals,animals_now))
         println("IDs for identified animals were saved in identified_animals.txt.\n")
     end
     println("---------------------DONE-------------------------")
