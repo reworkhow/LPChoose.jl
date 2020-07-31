@@ -177,3 +177,30 @@ IDs for identified animals were saved in identified_animals.txt.
 ---------------------DONE-------------------------
 
 ```
+
+### plotting
+```julia
+using DelimitedFiles
+genome_coverage="genome_coverage.txt"
+haplotype_coverage="haplotype_coverage.txt"
+steps = readdlm(genome_coverage,',',header=true)[1][:,1]
+g=readdlm(genome_coverage,',',header=true)[1][:,2]
+h=readdlm(haplotype_coverage,',',header=true)[1][:,2]
+nsteps = length(g)
+
+plot(size=(500,500),
+    xlim=(0,nsteps),ylim=(0,1),
+    xaxis = (font(10), 0:5:nsteps),yaxis = (font(10), 0:0.1:1),
+    title="genome/haplotyp coverage using LPChoose",
+    ylabel = "coverage",xlabel = "number of steps",
+    framestyle=:origin,legend=:bottomright
+)
+
+anim = @animate for i in 1:length(g)
+    labelg = (i == 1) ? "genome" : ""
+    labelh = (i == 1) ? "haplotype" : ""
+    plot!(steps[i:i],g[i:i],seriestype=:scatter,markercolor=:green,label=labelg)
+    plot!(steps[i:i],h[i:i],seriestype=:scatter,markercolor=:red,label=labelh)
+end
+gif(anim)
+```
