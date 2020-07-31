@@ -180,7 +180,7 @@ IDs for identified animals were saved in identified_animals.txt.
 
 ### plotting
 
-#### Making animations (GIF) using output files 
+#### Making animations (GIF) using output files
 
 ```julia
 using Plots, DelimitedFiles
@@ -207,3 +207,4 @@ anim = @animate for i in 1:length(g)
 end
 gif(anim, "anim_fps5.gif", fps = 5)
 ```
+![animation](images/anim_fps5.gif)
