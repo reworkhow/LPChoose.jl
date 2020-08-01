@@ -106,11 +106,7 @@ Maximum:        0.353000
 --representing maximum proportions of haplotypes--
 -----------RUN LINEAR PROGRAMMING-----------------
 
-Step 1 took  0.415148 seconds (942.24 k allocations: 121.932 MiB)
-Step 2 took  0.434525 seconds (930.95 k allocations: 110.687 MiB, 15.05% gc time)
-Step 3 took  0.348062 seconds (921.41 k allocations: 102.636 MiB)
-Step 4 took  0.283420 seconds (910.40 k allocations: 95.106 MiB)
-Step 5 took  0.289956 seconds (901.46 k allocations: 89.485 MiB, 11.84% gc time)
+identifying most representative animals ...100%|████████| Time: 0:00:23
 
 0.05023113602446039 of the unique haplotypes in the population is covered.
 0.5006245666272382 of the genome in the population is covered.
@@ -159,11 +155,7 @@ Maximum:        0.353000
 --representing maximum proportions of haplotypes--
 -----------RUN LINEAR PROGRAMMING-----------------
 
-Step 1 took  0.374401 seconds (908.63 k allocations: 101.468 MiB, 5.89% gc time)
-Step 2 took  0.283823 seconds (899.96 k allocations: 94.103 MiB)
-Step 3 took  0.289010 seconds (891.79 k allocations: 87.604 MiB, 9.55% gc time)
-Step 4 took  0.276065 seconds (885.11 k allocations: 83.597 MiB, 12.94% gc time)
-Step 5 took  0.274014 seconds (876.84 k allocations: 79.381 MiB, 19.45% gc time)
+identifying most representative animals ...100%|████████| Time: 0:00:23
 
 0.07884104393404434 of the unique haplotypes in the population is covered.
 0.619383149107422 of the genome in the population is covered.
@@ -208,3 +200,27 @@ end
 gif(anim, "anim_fps5.gif", fps = 5)
 ```
 ![animation](images/anim_fps5.gif)
+
+#### Making a simple line plot
+
+```julia
+using Plots, DelimitedFiles
+genome_coverage    = "genome_coverage.txt"
+haplotype_coverage = "haplotype_coverage.txt"
+steps  = readdlm(genome_coverage,',',header=true)[1][:,1]
+g      = readdlm(genome_coverage,',',header=true)[1][:,2]
+h      = readdlm(haplotype_coverage,',',header=true)[1][:,2]
+nsteps = length(g)
+
+plot(size=(500,500),
+     xlim=(0,nsteps),ylim=(0,1),
+     xaxis = (font(10), 0:5:nsteps),yaxis = (font(10), 0:0.1:1),
+     title="LPChoose",
+     ylabel = "coverage",xlabel = "number of steps",
+     legend=:bottomright
+)
+
+plot!(steps,g,markercolor=:green,label="genome")
+plot!(steps,h,markercolor=:red,label="haplotype")
+```
+![line_plot](images/line_plot.png)
