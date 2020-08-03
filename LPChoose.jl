@@ -23,7 +23,7 @@ using ProgressMeter
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                   nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),
-                  preselected_animals = false) #budget is #of selected animals
+                  preselected_animals = false, low_frequency_prefer = false, self_define_importance = false) #budget is #of selected animals
     #Get incidence matrix
     A01_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF)
     A01,freq, animals = select_these_animals(A01_all,freq_all,animals_all,preselected_animals)
@@ -61,7 +61,20 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         animals_now      = copy(animals)
         A01now           = copy(A01)
         budget_each_step = Int(budget/nsteps)
-        importance       = Matrix(freq'A01now)#get importance of each individual
+        
+        # self_define_importance is either false or a vector with length equal to the number of animals
+        if self_define_importance == false
+            if low_frequency_prefer == false
+                importance       = Matrix(freq'A01now)#get importance of each individual
+            else
+                importance = (Matrix(freq'A01now) .- 1).^2  # IWS weights
+            end
+        else
+            if length(self_define_importance) != nind
+                error("the length of importance has to be equal to the number of animals.")
+            end
+            importance = self_define_importance
+        end
 
         #Create text files to save output at each step
         file_genome_coverage    =open("genome_coverage.txt","w")
@@ -97,8 +110,8 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
             haps_identified    = (vec(sum(A01now[:,select_this_animal],dims=2)) .!= 0) #boolean
             #update to current remaining animals for next round of selection
             A01now             = A01now[.!haps_identified,.!select_this_animal]
-            freq               = freq[.!haps_identified]
-            importance         = Matrix(freq'A01now)
+            #freq               = freq[.!haps_identified]
+            importance         = importance[.!select_this_animal]
             animals_now        = animals_now[.!select_this_animal]
             #save output to text files at this step
             writedlm(file_genome_coverage,[string(stepi) 1-sum(A01now)/sum(A01_all)],',')
