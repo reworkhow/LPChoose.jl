@@ -212,7 +212,7 @@ g      = readdlm(genome_coverage,',',header=true)[1][:,2]
 h      = readdlm(haplotype_coverage,',',header=true)[1][:,2]
 nsteps = length(g)
 
-plot(size=(500,500),
+line_plot=plot(size=(500,500),
      xlim=(0,nsteps),ylim=(0,1),
      xaxis = (font(10), 0:5:nsteps),yaxis = (font(10), 0:0.1:1),
      title="LPChoose",
@@ -222,5 +222,6 @@ plot(size=(500,500),
 
 plot!(steps,g,markercolor=:green,label="genome")
 plot!(steps,h,markercolor=:red,label="haplotype")
+savefig(line_plot,"line_plot.png")
 ```
 ![line_plot](images/line_plot.png)
