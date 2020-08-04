@@ -45,7 +45,7 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
     if weights_for_haplotypes == "haplotype frequency"
         weights_for_haplotypes = freq
     elseif weights_for_haplotypes == "equal"
-        weights_for_haplotypes = ones(freq)
+        weights_for_haplotypes = ones(length(freq))
     elseif weights_for_haplotypes == "rare haplotype preferred"
         weights_for_haplotypes = (freq .- 1).^2 #IWS weights
     elseif length(weights_for_haplotypes) != length(freq)
