@@ -11,6 +11,8 @@ using ProgressMeter
 * A fast approximation may be used to speed up computation in practice to select a fixed number of animals. This approximation
   is performed by selecting **budget** animals in **nsteps**, defaulting to selecting 2 animals at each step. For example,
   we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
+* To identify a fixed number of animals, multiple options for haplotype weights are available, including
+  "haplotype frequency" (default), "rare haplotype preferred", and "equal".
 * If a text file is provided for **hapblock**, the file format should be:
     * ```
       1,1,1,1,4       #ind1, hap1_1, hap1_1, hap2_1, hap2_4
@@ -22,13 +24,24 @@ using ProgressMeter
 
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
-                  nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),
-                  preselected_animals = false, low_frequency_prefer = false, self_define_importance = false) #budget is #of selected animals
+                  nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),  #budget is #of selected animals
+                  preselected_animals = false,
+                  weights_for_haplotypes = "haplotype frequency") #"equal", "haplotype frequency", "rare haplotype preferred",
     #Get incidence matrix
     A01_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF)
     A01,freq, animals = select_these_animals(A01_all,freq_all,animals_all,preselected_animals)
-    #animals  = collect(1:size(A01,2))
     nind     = length(animals)
+    #User-defined weights for haplotypes used in application 2
+    if weights_for_haplotypes == "haplotype frequency"
+        weights_for_haplotypes = freq
+    elseif weights_for_haplotypes == "equal"
+        weights_for_haplotypes = ones(freq)
+    elseif weights_for_haplotypes == "rare haplotype preferred"
+        weights_for_haplotypes = (freq .- 1).^2 #IWS weights
+    elseif length(weights_for_haplotypes) != length(freq)
+        error("the length of weights_for_haplotypes has to be equal to the number of haplotypes.")
+    end
+
     if budget == "unlimited" #application 1
         println("---------------1ST APPLICATION--------------------")
         println("-------identify minimum number of animals---------")
@@ -61,20 +74,7 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         animals_now      = copy(animals)
         A01now           = copy(A01)
         budget_each_step = Int(budget/nsteps)
-        
-        # self_define_importance is either false or a vector with length equal to the number of animals
-        if self_define_importance == false
-            if low_frequency_prefer == false
-                importance       = Matrix(freq'A01now)#get importance of each individual
-            else
-                importance = (Matrix(freq'A01now) .- 1).^2  # IWS weights
-            end
-        else
-            if length(self_define_importance) != nind
-                error("the length of importance has to be equal to the number of animals.")
-            end
-            importance = self_define_importance
-        end
+        importance       = Matrix(weights_for_haplotypes'A01now)#get importance of each individual
 
         #Create text files to save output at each step
         file_genome_coverage    =open("genome_coverage.txt","w")
@@ -110,9 +110,10 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
             haps_identified    = (vec(sum(A01now[:,select_this_animal],dims=2)) .!= 0) #boolean
             #update to current remaining animals for next round of selection
             A01now             = A01now[.!haps_identified,.!select_this_animal]
-            #freq               = freq[.!haps_identified]
-            importance         = importance[.!select_this_animal]
-            animals_now        = animals_now[.!select_this_animal]
+
+            weights_for_haplotypes  = weights_for_haplotypes[.!haps_identified]
+            importance              = Matrix(weights_for_haplotypes'A01now)#get importance of each individual
+            animals_now             = animals_now[.!select_this_animal]
             #save output to text files at this step
             writedlm(file_genome_coverage,[string(stepi) 1-sum(A01now)/sum(A01_all)],',')
             writedlm(file_hap_coverage,[string(stepi) 1-size(A01now,1)/size(A01_all,1)],',')
