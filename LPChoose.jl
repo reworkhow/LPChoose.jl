@@ -23,7 +23,7 @@ using ProgressMeter
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                   nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),
-                  preselected_animals = false, low_frequency_prefer = false, self_define_importance = false) #budget is #of selected animals
+                  preselected_animals = false, low_frequency_prefer = false, self_define_weight = false) #budget is #of selected animals
     #Get incidence matrix
     A01_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF)
     A01,freq, animals = select_these_animals(A01_all,freq_all,animals_all,preselected_animals)
@@ -62,18 +62,18 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         A01now           = copy(A01)
         budget_each_step = Int(budget/nsteps)
         
-        # self_define_importance is either false or a vector with length equal to the number of animals
-        if self_define_importance == false
+        # self_define_weight is either false or a vector with length equal to the number of haplotypes
+        if self_define_weight == false
             if low_frequency_prefer == false
                 importance       = Matrix(freq'A01now)#get importance of each individual
             else
                 importance = (Matrix(freq'A01now) .- 1).^2  # IWS weights
             end
         else
-            if length(self_define_importance) != nind
-                error("the length of importance has to be equal to the number of animals.")
+            if length(self_define_weight) != size(A01_all)[1]
+                error("the length of weight has to be equal to the number of haplotypes $(size(A01_all)[1]).")
             end
-            importance = self_define_importance
+            importance = Matrix(self_define_weight'A01now)
         end
 
         #Create text files to save output at each step
