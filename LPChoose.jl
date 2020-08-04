@@ -2,17 +2,16 @@
 using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics, StatsBase
 using ProgressMeter
 """
-    LPChoose(hapblock,budget=100,MAF=0.0;nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)))
+    LPChoose(hapblock,budget=100,MAF=0.0;
+             nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)),
+             preselected_animals    = false,
+             weights_for_haplotypes = "haplotype frequency",
+             sequencing_homozygous_haplotypes_only = false)
 
 * Choose animals for sequencing given haplotype information **hapblock** filterd by minor haplotype frequency **MAF** for two applications:
     * identify minimum number of animals containing all unique haplotypes in the population if `budget = "unlimited"`;
     * identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes
       present in the population given a limited **budget**, defaulting to `100` (100 animals).
-* A fast approximation may be used to speed up computation in practice to select a fixed number of animals. This approximation
-  is performed by selecting **budget** animals in **nsteps**, defaulting to selecting 2 animals at each step. For example,
-  we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
-* To identify a fixed number of animals, multiple options for haplotype weights are available, including
-  "haplotype frequency" (default), "rare haplotype preferred", and "equal".
 * If a text file is provided for **hapblock**, the file format should be:
     * ```
       1,1,1,1,4       #ind1, hap1_1, hap1_1, hap2_1, hap2_4
@@ -21,14 +20,25 @@ using ProgressMeter
       ```
     where individual IDs (they are required to be intergeres) are in 1st column, maternal and paternal haplotypes
     for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+* MISC
+    * A fast approximation may be used to speed up computation in practice to select a fixed number of animals.
+      This approximation is performed by selecting **budget** animals in **nsteps**, defaulting to selecting 2 animals
+      at each step. For example, we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
+    * A list of preselected animals can be provided as an array of animal IDs for **preselected_animals**.
+    * To identify a fixed number of animals, multiple options for `weights_for_haplotypes` are available, including
+      "haplotype frequency" (default), "rare haplotype preferred", and "equal".
+    * If `sequencing_homozygous_haplotypes_only`=`true`, LPChoose will only focus on sequencing homozygous haplotype
+      segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2015).
+
 
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                   nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),  #budget is #of selected animals
                   preselected_animals = false,
-                  weights_for_haplotypes = "haplotype frequency") #"equal", "haplotype frequency", "rare haplotype preferred",
+                  weights_for_haplotypes = "haplotype frequency", #"equal", "haplotype frequency", "rare haplotype preferred",
+                  sequencing_homozygous_haplotypes_only = false)
     #Get incidence matrix
-    A01_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF)
+    A01_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF,sequencing_homozygous_haplotypes_only)
     A01,freq, animals = select_these_animals(A01_all,freq_all,animals_all,preselected_animals)
     nind     = length(animals)
     #User-defined weights for haplotypes used in application 2
@@ -165,7 +175,7 @@ end
 #A = convert_input_to_A(input)
 #Matrix(A)'
 
-function convert_input_to_A(hapblock,MAF=0.0)
+function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_only=false)
     if typeof(hapblock) == String
         df = readdlm(hapblock,Int64)
     else
@@ -216,8 +226,12 @@ function convert_input_to_A(hapblock,MAF=0.0)
     colindex=[colindex[1];colindex[2]]
     value=[value[1];value[2]]
     A012=sparse(rowindex,colindex,value)
-    #To make sparse matrix only has value "1",one unique haplotypes in one animal in one block
-    #was calculated twice.
+
+    if sequencing_homozygous_haplotypes_only == true
+        A012 = replace!(A012, 1=>0) #MAF threshold will remove rows(haps) of all zeros
+    end
+    #To make sparse matrix only has value "1",one unique haplotypes in one animal
+    #in one block was calculated twice.
     A01 = replace!(A012, 2=>1)
     freq = vec(mean(A01,dims=2))
     println("--------------INPUT----------------------------")
