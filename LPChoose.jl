@@ -22,8 +22,9 @@ using ProgressMeter
     for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
 * MISC
     * A fast approximation may be used to speed up computation in practice to select a fixed number of animals.
-      This approximation is performed by selecting **budget** animals in **nsteps**, defaulting to selecting 2 animals
-      at each step. For example, we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
+      This approximation is performed by selecting **budget** animals in multiple steps by selecting `budget_each_step`
+      animals at each step, defaulting to `2`. For example, we can select 2 animals in each step to select 100 animals
+      with 100/2=50 steps.
     * A list of preselected animals can be provided as an array of animal IDs for **preselected_animals**.
     * To identify a fixed number of animals, multiple options for `weights_for_haplotypes` are available, including
       "haplotype frequency" (default), "rare haplotype preferred", and "equal".
@@ -33,7 +34,7 @@ using ProgressMeter
 
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
-                  nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2))),  #budget is #of selected animals
+                  budget_each_step=  2,  #budget is #of selected animals
                   preselected_animals = false,
                   weights_for_haplotypes = "haplotype frequency", #"equal", "haplotype frequency", "rare haplotype preferred",
                   sequencing_homozygous_haplotypes_only = false)
@@ -81,9 +82,10 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         if budget > length(animals)
             error("try to identify best $budget animals from a population of $(length(animals)) animals.")
         end
+        nsteps           = (budget%budget_each_step != 0) ? div(budget,budget_each_step)+1 : div(budget,budget_each_step)
+
         animals_now      = copy(animals)
         A01now           = copy(A01)
-        budget_each_step = Int(budget/nsteps)
         importance       = Matrix(weights_for_haplotypes'A01now)#get importance of each individual
 
         #Create text files to save output at each step
@@ -102,6 +104,9 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         end
 
         @showprogress "identifying most representative animals ..." for stepi = 1:nsteps
+            if stepi == nsteps
+                budget_each_step = budget - budget_each_step*(nsteps-1)
+            end
             nind  = length(animals_now)
             model = Model(GLPK.Optimizer)
             @variable(model, select_this_animal[1:nind],Bin)
