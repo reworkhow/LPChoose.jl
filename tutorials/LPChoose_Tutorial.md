@@ -1,16 +1,16 @@
 # A Tutorial on running LPChoose in Julia
 
-LPChoose function is able to choose animals for sequencing given haplotype information hapblock based on linear programming. There are two applications of the function: 1) identify minimum number of animals containing all unique haplotypes in the population; 2) identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes present in the population given a limited budget.
+The LPChoose package is able to choose animals for sequencing given haplotype information using linear programming. There are two applications in this package: 1) identify minimum number of animals containing all unique haplotypes in the population; 2) identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes present in the population given a limited budget.
 
 ## Installation
 
 ### Install Julia
 
-Julia is pulicly available on https://julialang.org/downloads/. Choose the proper version for your computer operating system.
+Julia is publicly available at https://julialang.org/downloads/. Install the proper version for your computer operating system.
 
 ### Install LPChoose
 
-You can download LPChoose function from Github https://github.com/reworkhow/LPChoose.jl.
+You can download the LPChoose package from Github https://github.com/reworkhow/LPChoose.jl.
 <img src="fig1.png">
 
 Or you can download it using the command line in Terminal: git clone https://github.com/reworkhow/LPChoose.jl.git.
