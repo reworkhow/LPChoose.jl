@@ -32,23 +32,17 @@ The other packages can be downloaded similarly. Use the following code to check 
 using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics,StatsBase,ProgressMeter
 ```
 
-If the code can run without an error, then all the packages are ready. 
+If the code runs without an error, then all the packages are ready. 
 
 ## Run LPChoose
 
-Now we are all set to go! Let's use the example dataset in LPChoose (smalldata.txt) to demonstrate the function. First set the working directory where LPChoose.jl locates (If you download LPChoose using Terminal, the package name is "LPChoose.jl"; If you download LPChoose from the Github webpage, the name is "LPChoose.jl-master" and the working directory should be "~/LPChoose.jl-master") and use include function to make LPChoose ready.
+Now we are all set to go! Let's use the example dataset in LPChoose (smalldata.txt) to demonstrate the function. First set the working directory where LPChoose.jl locates (If you download LPChoose using Terminal, the package name is "LPChoose.jl"; If you download LPChoose from the Github webpage, the name is "LPChoose.jl-master" and the working directory should be "~/LPChoose.jl-master") and use `include` function to load LPChoose functions.
 
 
 ```julia
-cd("/Users/lijinghui/Desktop/LPChoose.jl")
+cd("~/Desktop/LPChoose.jl")
 include("LPChoose.jl")
 ```
-
-
-
-
-    select_these_animals (generic function with 1 method)
-
 
 
 We can check the detailed information of LPChoose using the help function (?) in Julia.
@@ -185,7 +179,7 @@ LPChoose("smalldata.txt",10)
     
 
 
-    [32midentifying most representative animals ...100%|████████| Time: 0:00:05[39m
+    identifying most representative animals ...100%|████████| Time: 0:00:05[39m
 
 
     
@@ -251,7 +245,8 @@ LPChoose("smalldata.txt",4135)
 
 
 Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. We can plot the genome and haplotype coverage at each step.
-#### Note: When LPChoose is run multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
+
+> Note: When running LPChoose multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
 
 
 ```julia
