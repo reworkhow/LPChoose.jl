@@ -238,7 +238,7 @@ function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_on
     end
     #To make sparse matrix only has value "1",one unique haplotypes in one animal
     #in one block was calculated twice.
-    freq = vec(mean(A012,dims=2))
+    freq = vec(mean(A012,dims=2))/2
     A01  = replace!(A012, 2=>1)
     println("--------------INPUT----------------------------")
     println("#Animal:",size(A01,2))
