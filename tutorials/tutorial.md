@@ -42,16 +42,11 @@ If the code runs without an error, then all the packages are ready.
 
 Now we are all set to go! Let's use the example dataset in LPChoose (smalldata.txt) to demonstrate the function. The input file (has to be .txt) should provide individual IDs and haplotypes formatted as:
 
-output in the REPL:
-```
- * ```
         1,1,1,1,4       #ind1, hap1_1, hap1_1, hap2_1, hap2_4
         2,2,1,1,2       #ind2, hap1_2, hap1_1, hap2_1, hap2_2
         3,1,3,2,3       #ind3, hap1_1, hap1_3, hap2_2 hap2_3
-        ```
-
-    where individual IDs (they are required to be intergeres) are in 1st column, maternal and paternal haplotypes   for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
-```
+        
+    where individual IDs (they are required to be intergeres) are in 1st column, maternal and paternal haplotypes for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
 
 First set the working directory where LPChoose.jl locates (If you download LPChoose using Terminal, the package name is "LPChoose.jl"; If you download LPChoose from the Github webpage, the name is "LPChoose.jl-master" and the working directory should be "~/LPChoose.jl-master") and use `include` function to load LPChoose functions.
 
