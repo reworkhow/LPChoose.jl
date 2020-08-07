@@ -27,7 +27,8 @@ using ProgressMeter
       with 100/2=50 steps.
     * A list of preselected animals can be provided as an array of animal IDs for **preselected_animals**.
     * To identify a fixed number of animals, multiple options for `weights_for_haplotypes` are available, including
-      "haplotype frequency" (default), "rare haplotype preferred", and "equal".
+      "haplotype frequency" (default), "rare haplotype preferred", and "equal". Note that "equal" tends to cover the largest
+      number of unique haplotypes in the population; "haplotype frequency" tends to cover the largest proportion of genomes in the population.
     * If `sequencing_homozygous_haplotypes_only`=`true`, LPChoose will only focus on sequencing homozygous haplotype
       segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2015).
 
