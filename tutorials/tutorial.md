@@ -1,5 +1,8 @@
 # A Tutorial on running LPChoose in Julia
 
+
+> made by Jinghui Li
+
 The LPChoose package is able to choose animals for sequencing given haplotype information using linear programming. There are two applications in this package: 1) identify minimum number of animals containing all unique haplotypes in the population; 2) identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes present in the population given a limited budget.
 
 ## Installation
