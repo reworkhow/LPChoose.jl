@@ -11,6 +11,7 @@ Julia is publicly available at https://julialang.org/downloads/. Install the pro
 ### Install LPChoose
 
 You can download the LPChoose package from Github https://github.com/reworkhow/LPChoose.jl.
+
 <img src="fig1.png">
 
 Or you can download it using the command line in Terminal: git clone https://github.com/reworkhow/LPChoose.jl.git.
@@ -51,11 +52,8 @@ We can check the detailed information of LPChoose using the help function (?) in
 ```julia
 ?LPChoose
 ```
-    
 
-
-
-
+Output:
 
 ```
 LPChoose(hapblock,budget=100,MAF=0.0;
@@ -63,7 +61,6 @@ LPChoose(hapblock,budget=100,MAF=0.0;
          preselected_animals    = false,
          weights_for_haplotypes = "haplotype frequency",
          sequencing_homozygous_haplotypes_only = false)
-```
 
   * Choose animals for sequencing given haplotype information **hapblock** filterd by minor haplotype frequency **MAF** for two applications:
 
@@ -84,7 +81,7 @@ LPChoose(hapblock,budget=100,MAF=0.0;
       * A list of preselected animals can be provided as an array of animal IDs for **preselected_animals**.
       * To identify a fixed number of animals, multiple options for `weights_for_haplotypes` are available, including "haplotype frequency" (default), "rare haplotype preferred", and "equal".
       * If `sequencing_homozygous_haplotypes_only`=`true`, LPChoose will only focus on sequencing homozygous haplotype segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2015).
-
+```
 
 
 
@@ -93,6 +90,9 @@ LPChoose(hapblock,budget=100,MAF=0.0;
 
 ```julia
 LPChoose("smalldata.txt", "unlimited")
+```
+
+output:
 ```
 
     --------------INPUT----------------------------
@@ -134,7 +134,7 @@ LPChoose("smalldata.txt", "unlimited")
     IDs for identified animals were saved in identified_animals.txt.
     
     ---------------------DONE-------------------------
-
+```
 
 The minimum number of animals covering all the unique haplotypes is 4135.
 
@@ -143,6 +143,9 @@ The minimum number of animals covering all the unique haplotypes is 4135.
 
 ```julia
 LPChoose("smalldata.txt",10)
+```
+
+output:
 ```
 
     --------------INPUT----------------------------
@@ -189,6 +192,7 @@ LPChoose("smalldata.txt",10)
     IDs for identified animals were saved in identified_animals.txt.
     
     ---------------------DONE-------------------------
+```
 
 
 When we have a budget to sequence 10 animals, only 5% of the haplotypes can be covered. Next let's try 4135, the solution we obtain from Application 1.
@@ -198,6 +202,8 @@ When we have a budget to sequence 10 animals, only 5% of the haplotypes can be c
 LPChoose("smalldata.txt",4135)
 ```
 
+output
+```
     --------------INPUT----------------------------
     #Animal:6000
     #Unique Haplotypes:27473
@@ -242,7 +248,7 @@ LPChoose("smalldata.txt",4135)
     IDs for identified animals were saved in identified_animals.txt.
     
     ---------------------DONE-------------------------
-
+```
 
 Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. We can plot the genome and haplotype coverage at each step.
 
@@ -270,8 +276,6 @@ plot!(steps,g,markercolor=:green,label="genome")
 plot!(steps,h,markercolor=:red,label="haplotype")
 savefig(line_plot,"line_plot.png")
 ```
-
-
 
 
 <img src="line_plot1.png" width="400">
