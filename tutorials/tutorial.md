@@ -148,7 +148,7 @@ output in the REPL:
 
 **The minimum number of animals covering all the unique haplotypes is 4135.** The output file of selected animals is saved as indentified_animals.txt in the working directory.
 
-> Note: LPChoose finds the solution based on integer programming which is NP-complete, thus it may take a very long time to solve certain problems. When that occurs, we recommend using application 2 to find the solution by setting `budget` a large number.
+> Note: LPChoose finds the solution based on integer programming which is NP-complete, thus it may take a very long time to solve certain problems. When that occurs, we recommend using application 2 to find the solution much more quickly by setting `budget` a large number.
 
 ### Application 2: Identify a fixed number of animals including as many as possible of the haplotypes given a limited budget
 
