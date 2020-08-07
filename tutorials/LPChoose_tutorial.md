@@ -129,7 +129,7 @@ output:
     
     It took 12.537615 seconds (942.22 k allocations: 121.610 MiB, 0.53% gc time)
     
-    The minimum number of selected animals is: [31m[1m4135[22m[39m
+    The minimum number of selected animals is: 4135
     
     IDs for identified animals were saved in identified_animals.txt.
     
@@ -182,7 +182,7 @@ output:
     
 
 
-    identifying most representative animals ...100%|████████| Time: 0:00:05[39m
+    identifying most representative animals ...100%|████████| Time: 0:00:05
 
 
     
@@ -202,7 +202,7 @@ output:
 LPChoose("smalldata.txt",4135)
 ```
 
-output
+output:
 ```bash
     --------------INPUT----------------------------
     #Animal:6000
@@ -238,7 +238,7 @@ output
     
 
 
-    [32midentifying most representative animals ...100%|████████| Time: 0:02:16[39m
+    identifying most representative animals ...100%|████████| Time: 0:02:16
 
 
     
@@ -250,10 +250,11 @@ output
     ---------------------DONE-------------------------
 ```
 
-**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. We can plot the genome and haplotype coverage at each step.**
+**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. **
 
 > Note: When running LPChoose multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
 
+**We can plot the genome and haplotype coverage at each step.**
 
 ```julia
 using Plots
