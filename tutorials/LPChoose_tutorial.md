@@ -93,7 +93,7 @@ LPChoose("smalldata.txt", "unlimited")
 ```
 
 output:
-```
+```bash
 
     --------------INPUT----------------------------
     #Animal:6000
@@ -136,7 +136,7 @@ output:
     ---------------------DONE-------------------------
 ```
 
-The minimum number of animals covering all the unique haplotypes is 4135.
+**The minimum number of animals covering all the unique haplotypes is 4135.**
 
 ### Application 2: Identify a fixed number of animals including as many as possible of the haplotypes given a limited budget
 
@@ -146,7 +146,7 @@ LPChoose("smalldata.txt",10)
 ```
 
 output:
-```
+```bash
 
     --------------INPUT----------------------------
     #Animal:6000
@@ -195,7 +195,7 @@ output:
 ```
 
 
-When we have a budget to sequence 10 animals, only 5% of the haplotypes can be covered. Next let's try 4135, the solution we obtain from Application 1.
+**When we have a budget to sequence 10 animals, only 5% of the haplotypes can be covered. Next let's try 4135, the solution we obtain from Application 1.**
 
 
 ```julia
@@ -203,7 +203,7 @@ LPChoose("smalldata.txt",4135)
 ```
 
 output
-```
+```bash
     --------------INPUT----------------------------
     #Animal:6000
     #Unique Haplotypes:27473
@@ -250,7 +250,7 @@ output
     ---------------------DONE-------------------------
 ```
 
-Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. We can plot the genome and haplotype coverage at each step.
+**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. We can plot the genome and haplotype coverage at each step.**
 
 > Note: When running LPChoose multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
 
