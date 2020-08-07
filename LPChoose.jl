@@ -237,16 +237,20 @@ function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_on
     end
     #To make sparse matrix only has value "1",one unique haplotypes in one animal
     #in one block was calculated twice.
-    A01 = replace!(A012, 2=>1)
-    freq = vec(mean(A01,dims=2))
+    freq = vec(mean(A012,dims=2))
+    A01  = replace!(A012, 2=>1)
     println("--------------INPUT----------------------------")
     println("#Animal:",size(A01,2))
     println("#Unique Haplotypes:",size(A01,1))
     println("Haplotype Frequency ",summarystats(freq))
 
     #remove haplotypes with low frequency
-    A01  = A01[freq .> MAF,:]
-    freq = freq[freq .> MAF]
+    A01  = A01[(freq .> MAF).&(freq .< (1-MAF)),:]
+    freq = freq[(freq .> MAF).&(freq .< (1-MAF))]
+    #A01[freq .< MAF,:] .= 0
+    #freq[freq .< MAF] .= 0
+    #dropzeros!(A01)
+
     println("--------------QUALITY CONTROL-------------------")
     println("----------minor haplotype frequency: ",MAF,"--------")
     println("#Animal:",size(A01,2))
