@@ -36,6 +36,7 @@ using ProgressMeter
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                   budget_each_step=  2,  #budget is #of selected animals
                   preselected_animals = false,
+                  naive_approach = true,
                   weights_for_haplotypes = "haplotype frequency", #"equal", "haplotype frequency", "rare haplotype preferred",
                   sequencing_homozygous_haplotypes_only = false)
     #Get incidence matrix
@@ -109,8 +110,14 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
             end
             nind  = length(animals_now)
             model = Model(GLPK.Optimizer)
+            println("HAHA2")
             @variable(model, select_this_animal[1:nind],Bin)
-            @objective(model, Max, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
+            if naive_approach  == true
+                importance  = Matrix(weights_for_haplotypes'A01now)#get importance of each individual
+                @objective(model, Max, dot(importance,select_this_animal))
+            else
+                @objective(model, Max, sum(A01now*select_this_animal))
+            end
             @constraint(model, A01now * select_this_animal .<= 2)
             @constraint(model, sum(select_this_animal) <= budget_each_step) #e.g.,selecte 2 animals at each step
             #print("Step $stepi took") @time optimize!(model)
