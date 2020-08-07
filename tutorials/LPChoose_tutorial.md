@@ -182,7 +182,7 @@ output:
     
 
 
-    identifying most representative animals ...100%|████████| Time: 0:00:05
+    identifying most representative animals ...100%|████████| Time: 0:00:05
 
 
     
@@ -238,7 +238,7 @@ output:
     
 
 
-    identifying most representative animals ...100%|████████| Time: 0:02:16
+    identifying most representative animals ...100%|████████| Time: 0:02:16
 
 
     
