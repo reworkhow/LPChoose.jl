@@ -56,8 +56,7 @@ We can check the detailed information of LPChoose using the help function (?) in
 ?LPChoose
 ```
 
-Output:
-
+output in the REPL:
 ```
 LPChoose(hapblock,budget=100,MAF=0.0;
          nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)),
@@ -95,7 +94,7 @@ LPChoose(hapblock,budget=100,MAF=0.0;
 LPChoose("smalldata.txt", "unlimited")
 ```
 
-output:
+output in the REPL:
 ```bash
 
     --------------INPUT----------------------------
@@ -148,7 +147,7 @@ output:
 LPChoose("smalldata.txt",10)
 ```
 
-output:
+output in the REPL:
 ```bash
 
     --------------INPUT----------------------------
@@ -253,7 +252,7 @@ output:
     ---------------------DONE-------------------------
 ```
 
-**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one. **
+**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one.**
 
 > Note: When running LPChoose multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
 
