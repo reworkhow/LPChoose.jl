@@ -350,6 +350,59 @@ output:
     ---------------------DONE-------------------------
 ```
 
+```julia
+LPChoose("smalldata.txt", 787, sequencing_homozygous_haplotypes_only=true)
+```
+
+```
+    --------------INPUT----------------------------
+    #Animal:6000
+    #Unique Haplotypes:27473
+    Haplotype Frequency Summary Stats:
+    Length:         27473
+    Missing Count:  0
+    Mean:           0.000141
+    Minimum:        0.000000
+    1st Quartile:   0.000000
+    Median:         0.000000
+    3rd Quartile:   0.000000
+    Maximum:        0.045333
+    
+    --------------QUALITY CONTROL-------------------
+    ----------minor haplotype frequency: 0.0--------
+    #Animal:6000
+    #Unique Haplotypes:2778
+    Haplotype Frequency Summary Stats:
+    Length:         2778
+    Missing Count:  0
+    Mean:           0.001391
+    Minimum:        0.000167
+    1st Quartile:   0.000167
+    Median:         0.000500
+    3rd Quartile:   0.001333
+    Maximum:        0.045333
+    
+    ---------------2ND APPLICATION--------------------
+    ------------identify best 787 animals--------------
+    --representing maximum proportions of haplotypes--
+    -----------RUN LINEAR PROGRAMMING-----------------
+    
+
+
+    [32midentifying most representative animals ...100%|████████| Time: 0:00:11[39m
+
+
+    
+    0.9762419006479481 of the unique haplotypes in the population is covered.
+    0.9971532091097308 of the genome in the population is covered.
+    
+    IDs for identified animals were saved in identified_animals.txt.
+    
+    ---------------------DONE-------------------------
+```
+
+Now you only need to put your own haplotype file (has to be .txt) in the working directory and match up the input with the file name. Have fun with LPChoose!
+
 ## References
 
 Bickhart, D.M., Hutchison, J.L., Null, D.J., VanRaden, P.M. and Cole, J.B., 2016. Reducing animal sequencing redundancy by preferentially selecting animals with low-frequency haplotypes. Journal of Dairy Science, 99(7), pp.5526-5534.
