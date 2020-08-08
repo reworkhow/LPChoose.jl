@@ -40,7 +40,15 @@ If the code runs without an error, then all the packages are ready.
 
 ## Run LPChoose
 
-Now we are all set to go! Let's use the example dataset in LPChoose (smalldata.txt) to demonstrate the function. First set the working directory where LPChoose.jl locates (If you download LPChoose using Terminal, the package name is "LPChoose.jl"; If you download LPChoose from the Github webpage, the name is "LPChoose.jl-master" and the working directory should be "~/LPChoose.jl-master") and use `include` function to load LPChoose functions.
+Now we are all set to go! Let's use the example dataset in LPChoose (smalldata.txt) as input to demonstrate the function. The input file (has to be .txt) should provide individual IDs and haplotypes formatted as:
+
+        1,1,1,1,4       #ind1, hap1_1, hap1_1, hap2_1, hap2_4
+        2,2,1,1,2       #ind2, hap1_2, hap1_1, hap2_1, hap2_2
+        3,1,3,2,3       #ind3, hap1_1, hap1_3, hap2_2 hap2_3
+        
+where individual IDs (they are required to be integers) are in 1st column, maternal and paternal haplotypes for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+
+First set the working directory where LPChoose.jl locates (If you download LPChoose using Terminal, the package name is "LPChoose.jl"; If you download LPChoose from the Github webpage, the name is "LPChoose.jl-master" and the working directory should be "~/LPChoose.jl-master") and use `include` function to load LPChoose functions.
 
 
 ```julia
@@ -76,7 +84,7 @@ LPChoose(hapblock,budget=100,MAF=0.0;
         3,1,3,2,3       #ind3, hap1_1, hap1_3, hap2_2 hap2_3
         ```
 
-    where individual IDs (they are required to be intergeres) are in 1st column, maternal and paternal haplotypes   for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+    where individual IDs (they are required to be integers) are in 1st column, maternal and paternal haplotypes   for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
   * MISC
 
       * A fast approximation may be used to speed up computation in practice to select a fixed number of animals. This approximation is performed by selecting **budget** animals in multiple steps by selecting `budget_each_step` animals at each step, defaulting to `2`. For example, we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
@@ -138,7 +146,9 @@ output in the REPL:
     ---------------------DONE-------------------------
 ```
 
-**The minimum number of animals covering all the unique haplotypes is 4135.**
+**The minimum number of animals covering all the unique haplotypes is 4135.** The output file of selected animals is saved as indentified_animals.txt in the working directory.
+
+> Note: LPChoose finds the solution based on integer programming which is NP-complete, thus it may take a very long time to solve certain problems. When that occurs, we recommend using application 2 to find the solution much more quickly by setting `budget` a large number.
 
 ### Application 2: Identify a fixed number of animals including as many as possible of the haplotypes given a limited budget
 
@@ -252,7 +262,7 @@ output:
     ---------------------DONE-------------------------
 ```
 
-**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one.**
+**Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one.** Application 2 has three output files, including selected animals at each step (identified_animals.txt), haplotype coverage at each step (haplotype_coverage.txt) and genome coverage at each step (genome_coverage.txt).
 
 > Note: When running LPChoose multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
 
@@ -287,11 +297,111 @@ savefig(line_plot,"line_plot.png")
 
 ### Other options for LPChoose
 
-To identify a fixed number of animals in Application 2, multiple options for weights_for_haplotypes are available, including "haplotype frequency" (default; Cheng et al., 2020), "rare haplotype preferred" (Bickhart et al. 2016), and "equal" (all weights equal to 1). It can be defined by the user as well. Below is the haplotype coverage on the example dataset for the three options.
+To identify a fixed number of animals in Application 2, multiple options for weights_for_haplotypes are available, including "haplotype frequency" (default; Cheng et al., 2020), "rare haplotype preferred" (Bickhart et al. 2016), and "equal" (all weights equal to 1). It can be defined by the user as well. Below is the haplotype coverage on the example dataset for the three options. "rare haplotype preferred" and "equal" are very close with minor differences.
 
 <img src="line_plot2.png" width="400">
 
-LPChoose can also focus on sequencing only homozygous haplotype segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2016) by setting sequencing_homozygous_haplotypes_only=true.
+LPChoose can also focus on sequencing only homozygous haplotype segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2016) by setting sequencing_homozygous_haplotypes_only=true for both applications:
+
+```julia
+LPChoose("smalldata.txt", "unlimited", sequencing_homozygous_haplotypes_only=true)
+```
+
+output:
+```
+    --------------INPUT----------------------------
+    #Animal:6000
+    #Unique Haplotypes:27473
+    Haplotype Frequency Summary Stats:
+    Length:         27473
+    Missing Count:  0
+    Mean:           0.000141
+    Minimum:        0.000000
+    1st Quartile:   0.000000
+    Median:         0.000000
+    3rd Quartile:   0.000000
+    Maximum:        0.045333
+    
+    --------------QUALITY CONTROL-------------------
+    ----------minor haplotype frequency: 0.0--------
+    #Animal:6000
+    #Unique Haplotypes:2778
+    Haplotype Frequency Summary Stats:
+    Length:         2778
+    Missing Count:  0
+    Mean:           0.001391
+    Minimum:        0.000167
+    1st Quartile:   0.000167
+    Median:         0.000500
+    3rd Quartile:   0.001333
+    Maximum:        0.045333
+    
+    ---------------1ST APPLICATION--------------------
+    -------identify minimum number of animals---------
+    -------containing all unique haplotypes----------
+    -----------RUN LINEAR PROGRAMMING-----------------
+    
+    It took  8.832674 seconds (28.33 M allocations: 1.419 GiB, 7.78% gc time)
+    
+    The minimum number of selected animals is: 787
+    
+    IDs for identified animals were saved in identified_animals.txt.
+    
+    ---------------------DONE-------------------------
+```
+
+```julia
+LPChoose("smalldata.txt", 787, sequencing_homozygous_haplotypes_only=true)
+```
+
+```
+    --------------INPUT----------------------------
+    #Animal:6000
+    #Unique Haplotypes:27473
+    Haplotype Frequency Summary Stats:
+    Length:         27473
+    Missing Count:  0
+    Mean:           0.000141
+    Minimum:        0.000000
+    1st Quartile:   0.000000
+    Median:         0.000000
+    3rd Quartile:   0.000000
+    Maximum:        0.045333
+    
+    --------------QUALITY CONTROL-------------------
+    ----------minor haplotype frequency: 0.0--------
+    #Animal:6000
+    #Unique Haplotypes:2778
+    Haplotype Frequency Summary Stats:
+    Length:         2778
+    Missing Count:  0
+    Mean:           0.001391
+    Minimum:        0.000167
+    1st Quartile:   0.000167
+    Median:         0.000500
+    3rd Quartile:   0.001333
+    Maximum:        0.045333
+    
+    ---------------2ND APPLICATION--------------------
+    ------------identify best 787 animals--------------
+    --representing maximum proportions of haplotypes--
+    -----------RUN LINEAR PROGRAMMING-----------------
+    
+
+
+    [32midentifying most representative animals ...100%|████████| Time: 0:00:11[39m
+
+
+    
+    0.9762419006479481 of the unique haplotypes in the population is covered.
+    0.9971532091097308 of the genome in the population is covered.
+    
+    IDs for identified animals were saved in identified_animals.txt.
+    
+    ---------------------DONE-------------------------
+```
+
+Now you only need to put your own haplotype file in the working directory and match up the input with the file name. Have fun with LPChoose!
 
 ## References
 
