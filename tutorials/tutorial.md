@@ -3,7 +3,7 @@
 
 > made by Jinghui Li
 
-The LPChoose package is able to choose animals for sequencing given haplotype information using linear programming. There are two applications in this package: 1) identify minimum number of animals containing all unique haplotypes in the population; 2) identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes present in the population given a limited budget.
+The LPChoose package is able to choose animals for sequencing given haplotype information using linear programming. There are two applications in this package: 1) identify the minimum number of animals containing all unique haplotypes in the population; 2) identify a fixed number of animals whose haplotypes include as large a proportion as possible of the haplotypes present in the population given a limited budget.
 
 ## Installation
 
@@ -46,7 +46,7 @@ Now we are all set to go! Let's use the example dataset in LPChoose (smalldata.t
         2,2,1,1,2       #ind2, hap1_2, hap1_1, hap2_1, hap2_2
         3,1,3,2,3       #ind3, hap1_1, hap1_3, hap2_2 hap2_3
         
-where individual IDs (they are required to be integers) are in 1st column, maternal and paternal haplotypes for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5.
+where individual IDs (they are required to be integers) are in 1st column, maternal and paternal haplotypes for haplotype block 1 are in column 2-3, maternal and paternal haplotypes for haplotype block 2 are in column 4-5 (the order of maternal and paternal can be otherwise).
 
 First set the working directory where LPChoose.jl locates (If you download LPChoose using Terminal, the package name is "LPChoose.jl"; If you download LPChoose from the Github webpage, the name is "LPChoose.jl-master" and the working directory should be "~/LPChoose.jl-master") and use `include` function to load LPChoose functions.
 
@@ -88,7 +88,7 @@ LPChoose(hapblock,budget=100,MAF=0.0;
   * MISC
 
       * A fast approximation may be used to speed up computation in practice to select a fixed number of animals. This approximation is performed by selecting **budget** animals in multiple steps by selecting `budget_each_step` animals at each step, defaulting to `2`. For example, we can select 2 animals in each step to select 100 animals with 100/2=50 steps.
-      * A list of preselected animals can be provided as an array of animal IDs for **preselected_animals**.
+      * A list of preselected animals can be provided as an array of animal IDs for **preselected_animals** (e.g. preselected_animals = [1,4,6,7,9]).
       * To identify a fixed number of animals, multiple options for `weights_for_haplotypes` are available, including "haplotype frequency" (default), "rare haplotype preferred", and "equal".
       * If `sequencing_homozygous_haplotypes_only`=`true`, LPChoose will only focus on sequencing homozygous haplotype segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2015).
 ```
@@ -148,7 +148,7 @@ output in the REPL:
 
 **The minimum number of animals covering all the unique haplotypes is 4135.** The output file of selected animals is saved as indentified_animals.txt in the working directory.
 
-> Note: LPChoose finds the solution based on integer programming which is NP-complete, thus it may take a very long time to solve certain problems. When that occurs, we recommend using application 2 to find the solution much more quickly by setting `budget` a large number.
+> Note: LPChoose finds the solution based on integer programming which is NP-complete, thus it may take a very long time to solve certain problems. When that occurs, we recommend using application 2 to find the solution much more quickly by setting `budget` equal to a large number.
 
 ### Application 2: Identify a fixed number of animals including as many as possible of the haplotypes given a limited budget
 
@@ -264,7 +264,7 @@ output:
 
 **Now 99% of the haplotypes are covered. Ideally 100% should be covered since the budget is set as the value we obtain from Application 1, but Application 2 uses an approximation method to significantly decrease the computation time when keeping the solution close enough to the true one.** Application 2 has three output files, including selected animals at each step (identified_animals.txt), haplotype coverage at each step (haplotype_coverage.txt) and genome coverage at each step (genome_coverage.txt).
 
-> Note: When running LPChoose multiple times without changing working directory, the output files will be replaced by the newest ones automatically.
+> Note: When running LPChoose multiple times without changing the working directory, the output files will be replaced by the newest ones automatically.
 
 **We can plot the genome and haplotype coverage at each step.**
 
@@ -297,7 +297,7 @@ savefig(line_plot,"line_plot.png")
 
 ### Other options for LPChoose
 
-To identify a fixed number of animals in Application 2, multiple options for weights_for_haplotypes are available, including "haplotype frequency" (default; Cheng et al., 2020), "rare haplotype preferred" (Bickhart et al. 2016), and "equal" (all weights equal to 1). It can be defined by the user as well. Below is the haplotype coverage on the example dataset for the three options. "rare haplotype preferred" and "equal" are very close with minor differences.
+To identify a fixed number of animals in Application 2, multiple options for weights_for_haplotypes are available, including "haplotype frequency" (default; Cheng et al., 2020), "rare haplotype preferred" (Bickhart et al. 2016), and "equal" (all weights equal to 1). An array of weights can be defined by the user as well. Below is the haplotype coverage on the example dataset for the three options. "rare haplotype preferred" and "equal" are very close with minor differences.
 
 <img src="line_plot2.png" width="400">
 
