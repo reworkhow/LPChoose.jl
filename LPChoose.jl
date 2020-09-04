@@ -6,9 +6,9 @@ import_Gurobi = false  # import Gurobi package when import_Gurobi = true
 if import_Gurobi == true
     try
         @eval import Gurobi
-        println("Gurobi has been installed.")
+        println("Gurobi has been imported.")
     catch
-        println("Gurobi is not installed. GLPK has been installed.")
+        println("Gurobi is not installed. Please go to https://www.gurobi.com for installation, or switch to GLPK as the solver.")
     end
 end
 """
