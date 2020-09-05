@@ -1,12 +1,22 @@
 #include("LPChoose.jl"); LPChoose("smalldata.txt",100,0.00);
 using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics, StatsBase
 using ProgressMeter
+
+import_Gurobi = false  # import Gurobi package when import_Gurobi = true
+if import_Gurobi == true
+    try
+        @eval import Gurobi
+        println("Gurobi has been imported.")
+    catch
+        println("Gurobi is not installed. Please go to https://www.gurobi.com for installation, or switch to GLPK as the solver.")
+    end
+end
 """
     LPChoose(hapblock,budget=100,MAF=0.0;
              nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)),
              preselected_animals    = false,
              weights_for_haplotypes = "haplotype frequency",
-             sequencing_homozygous_haplotypes_only = false)
+             sequencing_homozygous_haplotypes_only = false, ind_hap_lim=2, use_Gurobi = false, time_limit = 30)
 
 * Choose animals for sequencing given haplotype information **hapblock** filterd by minor haplotype frequency **MAF** for two applications:
     * identify minimum number of animals containing all unique haplotypes in the population if `budget = "unlimited"`;
@@ -31,14 +41,16 @@ using ProgressMeter
       number of unique haplotypes in the population; "haplotype frequency" tends to cover the largest proportion of genomes in the population.
     * If `sequencing_homozygous_haplotypes_only`=`true`, LPChoose will only focus on sequencing homozygous haplotype
       segments to achieve a reduction in cost with an added benefit of phasing variant calls efficiently (Bickhart et al. 2015).
-
+    * ind_hap_lim is the maximum number of identical haplotypes shared by selected individuals in each step for application 2, default value equal to 2.
+    * use_Gurobi indicates whether using Gurobi (use_Gurobi = ture) or GLPK (use_Gurobi = false) as integer programming solver, default equal to false.
+    * time_limit is the time limit in minutes of forcing LPChoose to stop, default equal to 30.
 
 """
 function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                   budget_each_step=  2,  #budget is #of selected animals
                   preselected_animals = false,
                   weights_for_haplotypes = "haplotype frequency", #"equal", "haplotype frequency", "rare haplotype preferred",
-                  sequencing_homozygous_haplotypes_only = false)
+                  sequencing_homozygous_haplotypes_only = false, ind_hap_lim=2, use_Gurobi = false, time_limit = 30)
     #Get incidence matrix
     A_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF,sequencing_homozygous_haplotypes_only)
     A,freq, animals = select_these_animals(A_all,freq_all,animals_all,preselected_animals)
@@ -60,7 +72,12 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
         println("-------containing all unique haplotypes----------")
         println("-----------RUN LINEAR PROGRAMMING-----------------\n")
         importance = ones(nind)
-        model = Model(GLPK.Optimizer)
+        if use_Gurobi == false
+            model = Model(GLPK.Optimizer)
+            set_optimizer_attribute(model, "tm_lim", time_limit * 60 * 1_000)  # time limit in milliseconds (default 30 min)
+        else
+            model = Model(optimizer_with_attributes(Gurobi.Optimizer, "TimeLimit" => time_limit*60)) # time limit in seconds (default 30 min)
+        end
         @variable(model, select_this_animal[1:nind],Bin)
         @objective(model, Min, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
         @constraint(model, A * select_this_animal .>= 1)
@@ -109,10 +126,14 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                 budget_each_step = budget - budget_each_step*(nsteps-1)
             end
             nind  = length(animals_now)
-            model = Model(GLPK.Optimizer)
+            if use_Gurobi == false
+                model = Model(GLPK.Optimizer)
+            else
+                model = Model(optimizer_with_attributes(Gurobi.Optimizer))
+            end
             @variable(model, select_this_animal[1:nind],Bin)
             @objective(model, Max, sum([importance[i]*select_this_animal[i] for i= 1:nind]))
-            @constraint(model, Anow * select_this_animal .<= 2)
+            @constraint(model, Anow * select_this_animal .<= ind_hap_lim)
             @constraint(model, sum(select_this_animal) <= budget_each_step) #e.g.,selecte 2 animals at each step
             #print("Step $stepi took") @time optimize!(model)
             optimize!(model)
