@@ -2,15 +2,13 @@
 using DataFrames,LinearAlgebra,CSV,DelimitedFiles,SparseArrays,GLPK,JuMP,Statistics, StatsBase
 using ProgressMeter
 
-import_Gurobi = false  # import Gurobi package when import_Gurobi = true
-if import_Gurobi == true
-    try
-        @eval import Gurobi
-        println("Gurobi has been imported.")
-    catch
-        println("Gurobi is not installed. Please go to https://www.gurobi.com for installation, or switch to GLPK as the solver.")
-    end
+try
+    @eval import Gurobi
+    println("Gurobi has been imported.")
+catch
+    println("Gurobi is not installed. Please go to https://www.gurobi.com for installation, or switch to GLPK as the solver.")
 end
+
 """
     LPChoose(hapblock,budget=100,MAF=0.0;
              nsteps= (budget=="unlimited" ? 1 : Int(ceil(budget/2)),
