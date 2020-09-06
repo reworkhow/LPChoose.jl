@@ -241,7 +241,7 @@ Gurobi is a commercial mathematical optimization solver, which provides feasible
 
 #### Download an acedemic license
 
-Log in using your account on the homepage and request a license (don't change the downloading ) Follow the instructions to activate Gurobi.
+Log in using your account on the homepage and request a license (don't change the downloading). Follow the instructions to activate Gurobi.
 
 #### Download Gurobi in Julia
 
