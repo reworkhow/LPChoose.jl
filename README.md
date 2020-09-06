@@ -225,3 +225,30 @@ plot!(steps,h,markercolor=:red,label="haplotype")
 savefig(line_plot,"line_plot.png")
 ```
 ![line_plot](images/line_plot.png)
+
+### Use Gurobi in Julia 
+
+Gurobi is a commercial mathematical optimization solver, which provides feasible solutions much faster than GLPK for Application 1 of LPChoose. Gurobi offers a free license for acedememic use, and this tutorial illustrates how to install it and use it in Julia.
+
+#### Install Gurobi optimizer
+
+1. Download Gurobi from https://www.gurobi.com/downloads/. 
+
+2. Select the version "Gurobi Optimizer". 
+![install1](images/install1.png)
+
+3. Download and install the proper version of Gurobi for your computer after creating an acedemic account.
+
+#### Download an acedemic license
+
+Log in using your account on the homepage and request a license (don't change the downloading ) Follow the instructions to activate Gurobi.
+
+#### Download Gurobi in Julia
+
+There is a Gurobi wrapper for Julia so that we can use Gurobi in Julia. After installing Gurobi and the license, you can download the Gurobi package in Julia as follows:
+
+```julia
+using Pkg
+Pkg.add("Gurobi")
+```
+Now Gurobi is ready in Julia for use!
