@@ -6,7 +6,8 @@ try
     @eval import Gurobi
     println("Gurobi has been imported.")
 catch
-    println("Gurobi is not installed. Please go to https://www.gurobi.com for installation, or switch to GLPK as the solver.")
+    println("Gurobi is not installed. A Gurobi installation guide is available in the README file.")
+    println("The default solver GLPK will be used.")
 end
 
 """
