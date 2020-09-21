@@ -201,7 +201,7 @@ end
 #A = convert_input_to_A(input)
 #Matrix(A)'
 
-function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_only=false)
+function convert_input_to_A(hapblock,missingvalue=-99,MAF=0.0,sequencing_homozygous_haplotypes_only=false)
     if typeof(hapblock) == String
         df = readdlm(hapblock,Int64)
     else
@@ -215,7 +215,9 @@ function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_on
     breaks   = zeros(Int64,nblock)
     # number of haplotypes for each block
     for i in 1:nblock
-        num_haps[i]=length(union(df[:,2*i],df[:,2*i+1]))
+        haps=union(df[:,2*i],df[:,2*i+1])
+        haps=haps[haps .!= missingvalue]
+        num_haps[i]=length(haps)
     end
     #
     breaks[1]=0
@@ -234,17 +236,22 @@ function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_on
 
     for j in 1:nblock
         haps=union(df[:,2*j],df[:,2*j+1])
+        haps=haps[haps .!= missingvalue]
         for i in 1:nind
             val1=df[i,2*j]
             val2=df[i,2*j+1]
             hap1=findall(x -> x==val1,haps)
             hap2=findall(x -> x==val2,haps)
-            push!(rowindex[1],breaks[j]+ hap1[1])
-            push!(rowindex[2],breaks[j]+ hap2[1])
-            push!(colindex[1],i)
-            push!(colindex[2],i)
-            push!(value[1],1)
-            push!(value[2],1)
+            if val1 != missingvalue
+                push!(rowindex[1],breaks[j]+ hap1[1])
+                push!(colindex[1],i)
+                push!(value[1],1)
+            end
+            if val2 != missingvalue
+                push!(rowindex[2],breaks[j]+ hap2[1])
+                push!(colindex[2],i)
+                push!(value[2],1)
+            end
         end
     end
 
