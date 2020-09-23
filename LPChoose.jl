@@ -219,20 +219,15 @@ function convert_input_to_A(hapblock,missingvalue=-99,MAF=0.0,sequencing_homozyg
         haps=haps[haps .!= missingvalue]
         num_haps[i]=length(haps)
     end
-    #
-    breaks[1]=0
+    # count the accumulative haplotypes
     for i in 2:nblock
         breaks[i]=num_haps[i-1]+breaks[i-1]
     end
 
-    rowindex=[]
-    colindex=[]
-    value=[]
-    for k in 1:2
-        push!(rowindex,Int64[])
-        push!(colindex,Int64[])
-        push!(value,Int64[])
-    end
+    #record the row and column index for A012
+    rowindex=Int64[]
+    colindex=Int64[]
+    value=Int64[]
 
     for j in 1:nblock
         haps=union(df[:,2*j],df[:,2*j+1])
@@ -243,21 +238,18 @@ function convert_input_to_A(hapblock,missingvalue=-99,MAF=0.0,sequencing_homozyg
             hap1=findall(x -> x==val1,haps)
             hap2=findall(x -> x==val2,haps)
             if val1 != missingvalue
-                push!(rowindex[1],breaks[j]+ hap1[1])
-                push!(colindex[1],i)
-                push!(value[1],1)
+                push!(rowindex,breaks[j]+ hap1[1])
+                push!(colindex,i)
+                push!(value,1)
             end
             if val2 != missingvalue
-                push!(rowindex[2],breaks[j]+ hap2[1])
-                push!(colindex[2],i)
-                push!(value[2],1)
+                push!(rowindex,breaks[j]+ hap2[1])
+                push!(colindex,i)
+                push!(value,1)
             end
         end
     end
 
-    rowindex=[rowindex[1];rowindex[2]]
-    colindex=[colindex[1];colindex[2]]
-    value=[value[1];value[2]]
     A012=sparse(rowindex,colindex,value)
 
     if sequencing_homozygous_haplotypes_only == true
@@ -273,11 +265,8 @@ function convert_input_to_A(hapblock,missingvalue=-99,MAF=0.0,sequencing_homozyg
     println("Haplotype Frequency ",summarystats(freq))
 
     #remove haplotypes with low frequency
-    A01  = A01[(freq .> MAF).&(freq .< (1-MAF)),:]
-    freq = freq[(freq .> MAF).&(freq .< (1-MAF))]
-    #A01[freq .< MAF,:] .= 0
-    #freq[freq .< MAF] .= 0
-    #dropzeros!(A01)
+    A01  = A01[(freq .> MAF),:]
+    freq = freq[(freq .> MAF)]
 
     println("--------------QUALITY CONTROL-------------------")
     println("----------minor haplotype frequency: ",MAF,"--------")
