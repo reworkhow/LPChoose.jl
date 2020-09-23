@@ -1,4 +1,7 @@
 # LPChoose.jl
+
+* **Authors**: Hao Cheng, Kuruvilla Joseph Abraham, Keyu Xu, Jinghui Li
+
 Optimizing Sequencing Resources in Genotyped Livestock Populations by Linear Programming
 
 > Hao Cheng, Keyu Xu, Kuruvilla Joseph Abraham, Optimizing Sequencing Resources in Genotyped Livestock Populations Using Linear Programming
