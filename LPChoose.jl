@@ -49,9 +49,9 @@ function LPChoose(hapblock,budget="unlimited",MAF=0.0;
                   budget_each_step=  2,  #budget is #of selected animals
                   preselected_animals = false,
                   weights_for_haplotypes = "haplotype frequency", #"equal", "haplotype frequency", "rare haplotype preferred",
-                  sequencing_homozygous_haplotypes_only = false, ind_hap_lim=2, use_Gurobi = false, time_limit = 30)
+                  sequencing_homozygous_haplotypes_only = false, ind_hap_lim=2, use_Gurobi = false, time_limit = 30, missingvalue=-99)
     #Get incidence matrix
-    A_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF,sequencing_homozygous_haplotypes_only)
+    A_all,freq_all, animals_all = convert_input_to_A(hapblock,MAF,sequencing_homozygous_haplotypes_only,missingvalue)
     A,freq, animals = select_these_animals(A_all,freq_all,animals_all,preselected_animals)
     nind     = length(animals)
     #User-defined weights for haplotypes used in application 2
@@ -201,7 +201,7 @@ end
 #A = convert_input_to_A(input)
 #Matrix(A)'
 
-function convert_input_to_A(hapblock,missingvalue=-99,MAF=0.0,sequencing_homozygous_haplotypes_only=false)
+function convert_input_to_A(hapblock,MAF=0.0,sequencing_homozygous_haplotypes_only=false,missingvalue=-99)
     if typeof(hapblock) == String
         df = readdlm(hapblock,Int64)
     else
