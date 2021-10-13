@@ -30,6 +30,7 @@ bioRxiv 2020.06.29.179093; doi: https://doi.org/10.1101/2020.06.29.179093
 
 ### 1st Application
 ```julia
+julia> include("LPChoose.jl")
 julia> LPChoose("smalldata.txt","unlimited")
 
 --------------INPUT----------------------------
