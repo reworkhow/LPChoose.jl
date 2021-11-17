@@ -4,8 +4,8 @@
 
 Optimizing Sequencing Resources in Genotyped Livestock Populations by Linear Programming
 
-> Hao Cheng, Keyu Xu, Kuruvilla Joseph Abraham, Optimizing Sequencing Resources in Genotyped Livestock Populations Using Linear Programming
-bioRxiv 2020.06.29.179093; doi: https://doi.org/10.1101/2020.06.29.179093
+> Optimizing Sequencing Resources in Genotyped Livestock Populations Using Linear Programming, Frontier in Genetics, 12:740340.
+doi: 10.3389/fgene.2021.740340.
 
 
 ### LPChoose function
